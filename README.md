@@ -21,7 +21,33 @@ All numbers below come from running the notebooks in this repo on the competitio
 
 ### Multi-task models (`Prediction final.ipynb`)
 
-_Results pending: the notebook is being re-run on the full dataset._
+Scored on the held-out dev-test split (20% of `train.csv`, 1,595 polymers). Lower is better everywhere.
+wMAE is the competition-style weighted MAE (see [Metrics](#prediction-finalipynb-multi-task-models-and-submission)).
+
+| Model | wMAE | MAE Tg (°C) | MAE FFV | MAE Tc (W/(m·K)) | MAE Density (g/cm³) | MAE Rg (Å) | Overall MSE |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| LSTM                     | 0.195 | 48.2 | 0.159  | 0.152  | 0.305  | 2.71 | 174.9 |
+| **Random Forest**        | **0.063** | 46.4 | **0.0080** | **0.033** | **0.049** | **1.90** | 163.7 |
+| GNN                      | 0.121 | 46.6 | 0.069  | 0.061  | 0.165  | 3.50 | 158.3 |
+| LSTM + GNN (submitted)   | 0.138 | **45.5** | 0.069  | 0.090  | 0.216  | 2.77 | **153.5** |
+
+Labelled values in dev-test: Tg 87, FFV 1,419, Tc 145, Density 123, Rg 124.
+
+![Per-property MAE by model](results/dev_test_mae_by_property.png)
+
+What the results show:
+- **The Random Forest on Morgan fingerprints is the best model** on four of the five properties and on wMAE, by a wide
+  margin (about half the GNN's error and a third of the LSTM's).
+- **The submitted ensemble is not the best option.** Averaging LSTM and GNN wins only on `Tg` and on overall MSE (which
+  is mostly `Tg`). On wMAE it is worse than the GNN alone, and more than twice the Random Forest's error.
+  Submitting the Random Forest, or adding it to the ensemble, would likely score better.
+- `Tg` is hard for every model (MAE around 46 °C), with only 511 labelled training examples.
+- The Random Forest is deterministic, and its overall MSE (163.74) matches the 163.83 from the original Kaggle run.
+  The neural models depend on the search budget: this run used `N_TRIALS=3 EPOCHS=50` on CPU, while the Kaggle run used
+  10 trials × 200 epochs on a GPU and reported overall MSE of 240.5 (LSTM) and 169.5 (GNN).
+
+Chosen hyperparameters: LSTM `output_dim=17, LSTMunits=93, lr=7.5e-3`; GNN `num_layer=5, hidden_size=157, lr=7.4e-3`.
+Predictions for `test.csv` are in [`results/submission.csv`](results/submission.csv).
 
 ### Single-target GNNs (`GNN_Polymer_Prediction_All.ipynb`)
 
