@@ -1,0 +1,8 @@
+# Competition data (download from Kaggle, see README)
+data/
+
+# Kaggle writes this to the working directory; a copy is kept in results/
+/submission.csv
+
+.ipynb_checkpoints/
+__pycache__/
